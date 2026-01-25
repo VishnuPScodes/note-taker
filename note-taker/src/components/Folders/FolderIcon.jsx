@@ -1,23 +1,57 @@
-import React from 'react';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { useNotes } from '../../context/NotesContext';
 import './FolderIcon.css';
 
 const FolderIcon = ({ folder, onClick }) => {
   const { deleteFolder } = useNotes();
+  const {
+    attributes,
+    listeners,
+    setNodeRef: setDraggableRef,
+    transform,
+    isDragging
+  } = useDraggable({
+    id: folder._id,
+    data: { type: 'folder', folder }
+  });
+
+  const { setNodeRef: setDroppableRef, isOver } = useDroppable({
+    id: folder._id,
+    data: { type: 'folder', folder }
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.5 : 1,
+    zIndex: isDragging ? 999 : 1,
+    backgroundColor: isOver ? 'rgba(99, 102, 241, 0.1)' : undefined,
+    borderRadius: 'var(--radius-lg)'
+  };
 
   const handleContextMenu = (e) => {
     e.preventDefault();
-    if (window.confirm(`Delete folder "${folder.name}"? Notes inside will be moved to root.`)) {
+    if (window.confirm(`Delete folder "${folder.name}"? Notes inside will be moved up one level.`)) {
       deleteFolder(folder._id, false);
     }
   };
 
+  // Combine refs
+  const setRefs = (node) => {
+    setDraggableRef(node);
+    setDroppableRef(node);
+  };
+
   return (
     <div 
-      className="folder-icon-container fade-in" 
+      ref={setRefs}
+      style={style}
+      className={`folder-icon-container fade-in ${isOver ? 'drop-target' : ''}`}
       onClick={onClick}
       onContextMenu={handleContextMenu}
-      title="Right-click to delete"
+      title="Drag to move, right-click to delete"
+      {...attributes}
+      {...listeners}
     >
       <div className="folder-visual">
         <svg viewBox="0 0 24 24" fill="currentColor">

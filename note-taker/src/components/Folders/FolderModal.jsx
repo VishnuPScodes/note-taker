@@ -4,7 +4,7 @@ import Modal from '../Common/Modal';
 import Button from '../Common/Button';
 import ErrorMessage from '../Common/ErrorMessage';
 
-const FolderModal = ({ isOpen, onClose }) => {
+const FolderModal = ({ isOpen, onClose, parentId = null }) => {
   const { createFolder } = useNotes();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -21,7 +21,10 @@ const FolderModal = ({ isOpen, onClose }) => {
 
     setLoading(true);
 
-    const result = await createFolder({ name: name.trim() });
+    const result = await createFolder({ 
+      name: name.trim(),
+      parentId 
+    });
 
     setLoading(false);
 

@@ -1,10 +1,28 @@
-import React from 'react';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 import { format } from 'date-fns';
 import { useNotes } from '../../context/NotesContext';
 import './NoteCard.css';
 
 const NoteCard = ({ note, onEdit }) => {
   const { trashNote } = useNotes();
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    isDragging
+  } = useDraggable({
+    id: note._id,
+    data: { type: 'note', note }
+  });
+
+  const style = {
+    transform: CSS.Translate.toString(transform),
+    opacity: isDragging ? 0.3 : 1,
+    zIndex: isDragging ? 999 : 1,
+    backgroundColor: note.color || '#ffffff'
+  };
 
   const handleTrash = (e) => {
     e.stopPropagation();
@@ -17,9 +35,14 @@ const NoteCard = ({ note, onEdit }) => {
 
   return (
     <div 
-      className="note-card card fade-in" 
-      style={{ backgroundColor: note.color || '#ffffff' }}
-      onClick={onEdit}
+      ref={setNodeRef}
+      style={style}
+      className={`note-card card fade-in ${isDragging ? 'dragging' : ''}`}
+      onClick={(e) => {
+        if (!isDragging) onEdit(e);
+      }}
+      {...attributes}
+      {...listeners}
     >
       <div className="note-card-content">
         <h3 className="note-title">{note.title}</h3>

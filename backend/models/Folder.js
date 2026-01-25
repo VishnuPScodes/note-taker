@@ -13,6 +13,11 @@ const folderSchema = new mongoose.Schema({
     trim: true,
     maxlength: [50, 'Folder name cannot exceed 50 characters']
   },
+  parentId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Folder',
+    default: null
+  },
   position: {
     x: {
       type: Number,

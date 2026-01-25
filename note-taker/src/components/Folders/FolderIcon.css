@@ -27,7 +27,17 @@
 .folder-icon-container:hover .folder-visual {
   transform: scale(1.1);
 }
+.folder-icon-container.drop-target {
+  background: rgba(99, 102, 241, 0.1);
+  border: 2px dashed var(--primary);
+  transform: scale(1.05);
+}
 
+.breadcrumb-item.root-drop-active {
+  background: rgba(99, 102, 241, 0.2) !important;
+  color: var(--primary-light);
+  transform: scale(1.1);
+}
 .folder-name {
   font-weight: 600;
   font-size: 0.875rem;

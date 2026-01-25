@@ -96,7 +96,7 @@ router.post('/', auth, validateFolder, async (req, res) => {
 // @access  Protected
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, position } = req.body;
+    const { name, position, parentId } = req.body;
 
     // Find folder and verify ownership
     const folder = await Folder.findOne({ 
@@ -132,6 +132,18 @@ router.put('/:id', auth, async (req, res) => {
     // Update position if provided
     if (position) {
       folder.position = position;
+    }
+
+    // Update parentId if provided
+    if (parentId !== undefined) {
+      // Prevent circular reference
+      if (parentId === req.params.id) {
+        return res.status(400).json({
+          success: false,
+          message: 'A folder cannot be its own parent'
+        });
+      }
+      folder.parentId = parentId === 'null' ? null : parentId;
     }
 
     await folder.save();
