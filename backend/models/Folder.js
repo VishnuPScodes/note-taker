@@ -44,8 +44,8 @@ folderSchema.pre('save', function(next) {
   next();
 });
 
-// Compound index to ensure unique folder names per user
-folderSchema.index({ userId: 1, name: 1 }, { unique: true });
+// Compound index to ensure unique folder names per location for each user
+folderSchema.index({ userId: 1, name: 1, parentId: 1 }, { unique: true });
 
 const Folder = mongoose.model('Folder', folderSchema);
 

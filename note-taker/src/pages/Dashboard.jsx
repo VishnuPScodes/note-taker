@@ -62,6 +62,24 @@ const Dashboard = () => {
     ? notes.filter(note => note.folderId === currentFolder._id)
     : notes.filter(note => !note.folderId);
 
+  // Calculate breadcrumb path
+  const getBreadcrumbPath = () => {
+    if (!currentFolder) return [];
+    
+    const path = [];
+    let tempFolder = currentFolder;
+    
+    while (tempFolder) {
+      path.unshift(tempFolder);
+      if (!tempFolder.parentId) break;
+      tempFolder = folders.find(f => f._id === tempFolder.parentId);
+    }
+    
+    return path;
+  };
+
+  const breadcrumbPath = getBreadcrumbPath();
+
   const handleDragEnd = async (event) => {
     const { active, over } = event;
 
@@ -75,8 +93,7 @@ const Dashboard = () => {
         if (activeData.type === 'note') {
           await updateNote(active.id, { folderId: targetFolderId });
         } else if (activeData.type === 'folder') {
-          // Check if we are dragging a folder into its own child (prevent this)
-          // Simple check: don't move folder to itself (already covered)
+          // Prevent dragging a folder into its own children or itself is already handled by dnd-kit basic logic
           await updateFolder(active.id, { parentId: targetFolderId });
         }
       } else if (overData.type === 'root') {
@@ -142,14 +159,19 @@ const Dashboard = () => {
             <RootDropTarget onClick={handleBackToRoot}>
               🏠 All Notes
             </RootDropTarget>
-            {currentFolder && (
-              <>
+            
+            {breadcrumbPath.map((folder, index) => (
+              <React.Fragment key={folder._id}>
                 <span className="breadcrumb-separator">/</span>
-                <span className="breadcrumb-item active">
-                  📁 {currentFolder.name}
-                </span>
-              </>
-            )}
+                <button 
+                  className={`breadcrumb-item ${index === breadcrumbPath.length - 1 ? 'active' : ''}`}
+                  onClick={() => handleFolderClick(folder)}
+                  disabled={index === breadcrumbPath.length - 1}
+                >
+                  📁 {folder.name}
+                </button>
+              </React.Fragment>
+            ))}
           </div>
 
           {/* Action Buttons */}

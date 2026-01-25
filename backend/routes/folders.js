@@ -52,18 +52,19 @@ router.post('/', auth, validateFolder, async (req, res) => {
       });
     }
 
-    const { name, position } = req.body;
+    const { name, position, parentId } = req.body;
 
-    // Check if folder with same name already exists for this user
+    // Check if folder with same name already exists for this user in the same parent folder
     const existingFolder = await Folder.findOne({ 
       userId: req.userId, 
-      name 
+      name,
+      parentId: parentId || null
     });
 
     if (existingFolder) {
       return res.status(400).json({ 
         success: false,
-        message: 'A folder with this name already exists' 
+        message: 'A folder with this name already exists in this location' 
       });
     }
 
@@ -71,6 +72,7 @@ router.post('/', auth, validateFolder, async (req, res) => {
     const folder = new Folder({
       userId: req.userId,
       name,
+      parentId: parentId || null,
       position: position || { x: 0, y: 0 }
     });
 
