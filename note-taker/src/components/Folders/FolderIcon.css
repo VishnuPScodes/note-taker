@@ -1,0 +1,37 @@
+.folder-icon-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  width: 120px;
+  user-select: none;
+}
+
+.folder-icon-container:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-5px);
+}
+
+.folder-visual {
+  width: 64px;
+  height: 64px;
+  color: #fbbf24; /* Folder orange/yellow color */
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+  transition: transform var(--transition-fast);
+}
+
+.folder-icon-container:hover .folder-visual {
+  transform: scale(1.1);
+}
+
+.folder-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: center;
+  word-break: break-all;
+}
