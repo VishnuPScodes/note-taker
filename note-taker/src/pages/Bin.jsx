@@ -5,12 +5,14 @@ import { useNotes } from '../context/NotesContext';
 import Button from '../components/Common/Button';
 import LoadingSpinner from '../components/Common/LoadingSpinner';
 import NoteCard from '../components/Notes/NoteCard';
+import { useDialog } from '../context/DialogContext';
 import './Bin.css';
 
 const Bin = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { notes, loading, fetchNotes, restoreNote, deleteNote, emptyTrash } = useNotes();
+  const { showConfirm } = useDialog();
 
   useEffect(() => {
     fetchNotes({ isTrashed: true });
@@ -21,13 +23,27 @@ const Bin = () => {
   };
 
   const handleDeletePermanently = async (id) => {
-    if (window.confirm('Delete this note forever? This action cannot be undone.')) {
+    const ok = await showConfirm({
+      title: 'Delete Permanently',
+      message: 'Are you sure you want to delete this note forever? This action cannot be undone.',
+      confirmText: 'Delete Forever',
+      variant: 'danger'
+    });
+    
+    if (ok) {
       await deleteNote(id);
     }
   };
 
   const handleEmptyBin = async () => {
-    if (window.confirm('Are you sure you want to delete all items in the bin permanently?')) {
+    const ok = await showConfirm({
+      title: 'Empty Bin',
+      message: 'Are you sure you want to delete all items in the bin permanently? This cannot be undone.',
+      confirmText: 'Empty Bin',
+      variant: 'danger'
+    });
+    
+    if (ok) {
       await emptyTrash();
     }
   };

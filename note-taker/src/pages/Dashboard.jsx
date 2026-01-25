@@ -8,6 +8,7 @@ import NoteCard from '../components/Notes/NoteCard';
 import FolderIcon from '../components/Folders/FolderIcon';
 import NoteModal from '../components/Notes/NoteModal';
 import FolderModal from '../components/Folders/FolderModal';
+import { useDialog } from '../context/DialogContext';
 import './Dashboard.css';
 
 import { DndContext, useSensor, useSensors, PointerSensor, useDroppable } from '@dnd-kit/core';
@@ -39,6 +40,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { notes, folders, loading, currentFolder, setCurrentFolder, updateNote, updateFolder, deleteFolder } = useNotes();
+  const { showConfirm } = useDialog();
   
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -131,9 +133,18 @@ const Dashboard = () => {
     setCurrentFolder(null);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    const ok = await showConfirm({
+      title: 'Logout',
+      message: 'Are you sure you want to log out of your account?',
+      confirmText: 'Logout',
+      variant: 'danger'
+    });
+    
+    if (ok) {
+      logout();
+      navigate('/login');
+    }
   };
 
   if (loading && notes.length === 0) {
@@ -200,8 +211,14 @@ const Dashboard = () => {
                 folder={folder}
                 onClick={() => handleFolderClick(folder)}
                 onRename={() => handleRenameFolder(folder)}
-                onDelete={() => {
-                  if (window.confirm(`Delete folder "${folder.name}"? Notes inside will be moved up one level.`)) {
+                onDelete={async () => {
+                  const ok = await showConfirm({
+                    title: 'Delete Folder',
+                    message: `Are you sure you want to delete "${folder.name}"? Notes inside will be moved up one level.`,
+                    confirmText: 'Delete',
+                    variant: 'danger'
+                  });
+                  if (ok) {
                     deleteFolder(folder._id, false);
                   }
                 }}

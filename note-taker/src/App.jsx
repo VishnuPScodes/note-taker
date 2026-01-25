@@ -10,6 +10,8 @@ import Bin from './pages/Bin';
 import notificationService from './services/notificationService';
 import './index.css';
 
+import { DialogProvider } from './context/DialogContext';
+
 function App() {
   useEffect(() => {
     // Request notification permission and start checking for reminders
@@ -28,30 +30,32 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <NotesProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Dashboard />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/bin"
-              element={
-                <ProtectedRoute>
-                  <Bin />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </NotesProvider>
+        <DialogProvider>
+          <NotesProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/bin"
+                element={
+                  <ProtectedRoute>
+                    <Bin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </NotesProvider>
+        </DialogProvider>
       </AuthProvider>
     </Router>
   );

@@ -2,10 +2,12 @@ import { useDraggable } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
 import { format } from 'date-fns';
 import { useNotes } from '../../context/NotesContext';
+import { useDialog } from '../../context/DialogContext';
 import './NoteCard.css';
 
 const NoteCard = ({ note, onEdit }) => {
   const { trashNote } = useNotes();
+  const { showConfirm } = useDialog();
   const {
     attributes,
     listeners,
@@ -24,9 +26,16 @@ const NoteCard = ({ note, onEdit }) => {
     backgroundColor: note.color || '#ffffff'
   };
 
-  const handleTrash = (e) => {
+  const handleTrash = async (e) => {
     e.stopPropagation();
-    if (window.confirm('Move this note to bin?')) {
+    const ok = await showConfirm({
+      title: 'Move to Bin',
+      message: 'Are you sure you want to move this note to the bin?',
+      confirmText: 'Move to Bin',
+      variant: 'danger'
+    });
+    
+    if (ok) {
       trashNote(note._id);
     }
   };
