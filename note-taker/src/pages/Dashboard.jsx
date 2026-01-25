@@ -38,11 +38,18 @@ const RootDropTarget = ({ onClick, children }) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { notes, folders, loading, currentFolder, setCurrentFolder, updateNote, updateFolder } = useNotes();
+  const { notes, folders, loading, currentFolder, setCurrentFolder, updateNote, updateFolder, deleteFolder } = useNotes();
   
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
+  const [editingFolder, setEditingFolder] = useState(null);
+
+  const handleRenameFolder = (folder) => {
+    setEditingFolder(folder);
+    setShowRenameModal(true);
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -192,6 +199,12 @@ const Dashboard = () => {
                 key={folder._id}
                 folder={folder}
                 onClick={() => handleFolderClick(folder)}
+                onRename={() => handleRenameFolder(folder)}
+                onDelete={() => {
+                  if (window.confirm(`Delete folder "${folder.name}"? Notes inside will be moved up one level.`)) {
+                    deleteFolder(folder._id, false);
+                  }
+                }}
               />
             ))}
 
@@ -233,6 +246,17 @@ const Dashboard = () => {
           isOpen={showFolderModal}
           onClose={() => setShowFolderModal(false)}
           parentId={currentFolder?._id}
+        />
+      )}
+
+      {showRenameModal && (
+        <FolderModal
+          isOpen={showRenameModal}
+          onClose={() => {
+            setShowRenameModal(false);
+            setEditingFolder(null);
+          }}
+          folder={editingFolder}
         />
       )}
     </div>

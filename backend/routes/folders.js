@@ -118,13 +118,14 @@ router.put('/:id', auth, async (req, res) => {
       const existingFolder = await Folder.findOne({ 
         userId: req.userId, 
         name,
+        parentId: folder.parentId,
         _id: { $ne: req.params.id }
       });
 
       if (existingFolder) {
         return res.status(400).json({ 
           success: false,
-          message: 'A folder with this name already exists' 
+          message: 'A folder with this name already exists in this location' 
         });
       }
 

@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNotes } from '../../context/NotesContext';
 import Modal from '../Common/Modal';
 import Button from '../Common/Button';
 import ErrorMessage from '../Common/ErrorMessage';
 
-const FolderModal = ({ isOpen, onClose, parentId = null }) => {
-  const { createFolder } = useNotes();
+const FolderModal = ({ isOpen, onClose, parentId = null, folder = null }) => {
+  const { createFolder, updateFolder } = useNotes();
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (folder) {
+      setName(folder.name);
+    } else {
+      setName('');
+    }
+  }, [folder, isOpen]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,10 +29,15 @@ const FolderModal = ({ isOpen, onClose, parentId = null }) => {
 
     setLoading(true);
 
-    const result = await createFolder({ 
-      name: name.trim(),
-      parentId 
-    });
+    let result;
+    if (folder) {
+      result = await updateFolder(folder._id, { name: name.trim() });
+    } else {
+      result = await createFolder({ 
+        name: name.trim(),
+        parentId 
+      });
+    }
 
     setLoading(false);
 
@@ -40,7 +53,7 @@ const FolderModal = ({ isOpen, onClose, parentId = null }) => {
     <Modal 
       isOpen={isOpen} 
       onClose={onClose} 
-      title="Create New Folder"
+      title={folder ? 'Rename Folder' : 'Create New Folder'}
       size="sm"
     >
       <form onSubmit={handleSubmit}>
@@ -62,7 +75,7 @@ const FolderModal = ({ isOpen, onClose, parentId = null }) => {
         <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', gap: 'var(--spacing-md)' }}>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button type="submit" variant="primary" loading={loading}>
-            Create
+            {folder ? 'Save' : 'Create'}
           </Button>
         </div>
       </form>
