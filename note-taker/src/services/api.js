@@ -50,10 +50,15 @@ export const authAPI = {
 
 // Folders API
 export const foldersAPI = {
-  getAll: () => api.get('/folders'),
+  getAll: (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    return api.get(`/folders${queryString ? `?${queryString}` : ''}`);
+  },
   create: (folderData) => api.post('/folders', folderData),
   update: (id, folderData) => api.put(`/folders/${id}`, folderData),
-  delete: (id, deleteNotes = false) => api.delete(`/folders/${id}?deleteNotes=${deleteNotes}`)
+  trash: (id) => api.put(`/folders/${id}/trash`),
+  restore: (id) => api.put(`/folders/${id}/restore`),
+  delete: (id) => api.delete(`/folders/${id}`)
 };
 
 // Notes API

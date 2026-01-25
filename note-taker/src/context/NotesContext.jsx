@@ -21,11 +21,11 @@ export const NotesProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Fetch all folders
-  const fetchFolders = useCallback(async () => {
+  const fetchFolders = useCallback(async (params = {}) => {
     if (!isAuthenticated) return;
 
     try {
-      const response = await foldersAPI.getAll();
+      const response = await foldersAPI.getAll(params);
       setFolders(response.data.folders);
     } catch (err) {
       console.error('Error fetching folders:', err);
@@ -52,7 +52,7 @@ export const NotesProvider = ({ children }) => {
   // Initial data fetch
   useEffect(() => {
     if (isAuthenticated) {
-      fetchFolders();
+      fetchFolders({ isTrashed: false });
       fetchNotes({ isTrashed: false });
     }
   }, [isAuthenticated, fetchFolders, fetchNotes]);
@@ -80,19 +80,37 @@ export const NotesProvider = ({ children }) => {
     }
   };
 
-  const deleteFolder = async (id, deleteNotes = false) => {
+  const trashFolder = async (id) => {
     try {
-      await foldersAPI.delete(id, deleteNotes);
+      await foldersAPI.trash(id);
       setFolders(prev => prev.filter(f => f._id !== id));
-      
-      // Refresh notes if they were moved to root
-      if (!deleteNotes) {
-        fetchNotes({ isTrashed: false });
-      } else {
-        // Remove notes from state if they were deleted
-        setNotes(prev => prev.filter(n => n.folderId !== id));
-      }
-      
+      // Trashing a folder also trash its notes on the backend, 
+      // so we should refresh notes list
+      fetchNotes({ isTrashed: false });
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to move folder to trash';
+      return { success: false, error: message };
+    }
+  };
+
+  const restoreFolder = async (id) => {
+    try {
+      await foldersAPI.restore(id);
+      setFolders(prev => prev.filter(f => f._id !== id));
+      // Refresh to get restored notes back
+      fetchNotes({ isTrashed: false });
+      return { success: true };
+    } catch (err) {
+      const message = err.response?.data?.message || 'Failed to restore folder';
+      return { success: false, error: message };
+    }
+  };
+
+  const deleteFolder = async (id) => {
+    try {
+      await foldersAPI.delete(id);
+      setFolders(prev => prev.filter(f => f._id !== id));
       return { success: true };
     } catch (err) {
       const message = err.response?.data?.message || 'Failed to delete folder';
@@ -180,6 +198,8 @@ export const NotesProvider = ({ children }) => {
     fetchFolders,
     createFolder,
     updateFolder,
+    trashFolder,
+    restoreFolder,
     deleteFolder,
     createNote,
     updateNote,

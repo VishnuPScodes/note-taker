@@ -8,6 +8,7 @@ import NoteCard from '../components/Notes/NoteCard';
 import FolderIcon from '../components/Folders/FolderIcon';
 import NoteModal from '../components/Notes/NoteModal';
 import FolderModal from '../components/Folders/FolderModal';
+import WallpaperPicker from '../components/Common/WallpaperPicker';
 import { useDialog } from '../context/DialogContext';
 import './Dashboard.css';
 
@@ -28,7 +29,8 @@ const RootDropTarget = ({ onClick, children }) => {
         backgroundColor: isOver ? 'rgba(99, 102, 241, 0.2)' : 'transparent',
         padding: 'var(--spacing-xs) var(--spacing-sm)',
         borderRadius: 'var(--radius-sm)',
-        display: 'inline-block'
+        display: 'inline-block',
+        cursor: 'pointer'
       }}
     >
       {children}
@@ -39,19 +41,31 @@ const RootDropTarget = ({ onClick, children }) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
-  const { notes, folders, loading, currentFolder, setCurrentFolder, updateNote, updateFolder, deleteFolder } = useNotes();
+  const { 
+    notes, 
+    folders, 
+    loading, 
+    currentFolder, 
+    setCurrentFolder, 
+    updateNote, 
+    updateFolder, 
+    trashFolder, 
+    fetchNotes, 
+    fetchFolders 
+  } = useNotes();
   const { showConfirm } = useDialog();
   
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
   const [showRenameModal, setShowRenameModal] = useState(false);
+  const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [editingFolder, setEditingFolder] = useState(null);
 
-  const handleRenameFolder = (folder) => {
-    setEditingFolder(folder);
-    setShowRenameModal(true);
-  };
+  useEffect(() => {
+    fetchNotes({ isTrashed: false });
+    fetchFolders({ isTrashed: false });
+  }, [fetchNotes, fetchFolders]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -61,15 +75,15 @@ const Dashboard = () => {
     })
   );
 
-  // Filter folders based on current folder
+  // Filter folders based on current folder and trash status
   const displayedFolders = folders.filter(folder => 
-    currentFolder ? folder.parentId === currentFolder._id : !folder.parentId
+    !folder.isTrashed && (currentFolder ? folder.parentId === currentFolder._id : !folder.parentId)
   );
 
-  // Filter notes based on current folder
+  // Filter notes based on current folder and trash status
   const displayedNotes = currentFolder
-    ? notes.filter(note => note.folderId === currentFolder._id)
-    : notes.filter(note => !note.folderId);
+    ? notes.filter(note => !note.isTrashed && note.folderId === currentFolder._id)
+    : notes.filter(note => !note.isTrashed && !note.folderId);
 
   // Calculate breadcrumb path
   const getBreadcrumbPath = () => {
@@ -102,7 +116,6 @@ const Dashboard = () => {
         if (activeData.type === 'note') {
           await updateNote(active.id, { folderId: targetFolderId });
         } else if (activeData.type === 'folder') {
-          // Prevent dragging a folder into its own children or itself is already handled by dnd-kit basic logic
           await updateFolder(active.id, { parentId: targetFolderId });
         }
       } else if (overData.type === 'root') {
@@ -147,19 +160,26 @@ const Dashboard = () => {
     }
   };
 
-  if (loading && notes.length === 0) {
-    return <LoadingSpinner text="Loading your notes..." />;
+  const handleRenameFolder = (folder) => {
+    setEditingFolder(folder);
+    setShowRenameModal(true);
+  };
+
+  if (loading && notes.length === 0 && folders.length === 0) {
+    return <LoadingSpinner text="Loading your workspace..." />;
   }
 
   return (
     <div className="dashboard">
-      {/* Top Navigation */}
       <nav className="dashboard-nav">
         <div className="nav-left">
           <h2 className="app-title" onClick={handleBackToRoot} style={{ cursor: 'pointer' }}>📝 NoteTaker</h2>
         </div>
         <div className="nav-right">
           <span className="user-name">Hi, {user?.username}!</span>
+          <Button variant="ghost" size="sm" onClick={() => setShowWallpaperPicker(true)}>
+            🖼️ Wallpaper
+          </Button>
           <Button variant="ghost" size="sm" onClick={() => navigate('/bin')}>
             🗑️ Bin
           </Button>
@@ -169,10 +189,8 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      {/* Main Content */}
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
         <div className="dashboard-content">
-          {/* Breadcrumb */}
           <div className="breadcrumb">
             <RootDropTarget onClick={handleBackToRoot}>
               🏠 All Notes
@@ -192,7 +210,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Action Buttons */}
           <div className="action-bar">
             <Button variant="primary" onClick={handleNewNote}>
               ✏️ New Note
@@ -202,9 +219,7 @@ const Dashboard = () => {
             </Button>
           </div>
 
-          {/* Grid Display */}
           <div className="items-grid">
-            {/* Show current level folders */}
             {displayedFolders.map(folder => (
               <FolderIcon
                 key={folder._id}
@@ -213,19 +228,18 @@ const Dashboard = () => {
                 onRename={() => handleRenameFolder(folder)}
                 onDelete={async () => {
                   const ok = await showConfirm({
-                    title: 'Delete Folder',
-                    message: `Are you sure you want to delete "${folder.name}"? Notes inside will be moved up one level.`,
-                    confirmText: 'Delete',
+                    title: 'Move to Bin',
+                    message: `Are you sure you want to move "${folder.name}" to the bin? All notes inside will also be hidden.`,
+                    confirmText: 'Move to Bin',
                     variant: 'danger'
                   });
                   if (ok) {
-                    deleteFolder(folder._id, false);
+                    trashFolder(folder._id);
                   }
                 }}
               />
             ))}
 
-            {/* Show notes */}
             {displayedNotes.map(note => (
               <NoteCard
                 key={note._id}
@@ -234,7 +248,6 @@ const Dashboard = () => {
               />
             ))}
 
-            {/* Empty State */}
             {displayedFolders.length === 0 && displayedNotes.length === 0 && (
               <div className="empty-state">
                 <h3>{currentFolder ? 'This folder is empty' : 'Welcome to NoteTaker! 🎉'}</h3>
@@ -245,7 +258,6 @@ const Dashboard = () => {
         </div>
       </DndContext>
 
-      {/* Modals */}
       {showNoteModal && (
         <NoteModal
           isOpen={showNoteModal}
@@ -274,6 +286,13 @@ const Dashboard = () => {
             setEditingFolder(null);
           }}
           folder={editingFolder}
+        />
+      )}
+
+      {showWallpaperPicker && (
+        <WallpaperPicker 
+          isOpen={showWallpaperPicker}
+          onClose={() => setShowWallpaperPicker(false)}
         />
       )}
     </div>

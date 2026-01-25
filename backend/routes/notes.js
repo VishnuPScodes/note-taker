@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import Note from '../models/Note.js';
+import Folder from '../models/Folder.js';
 import auth from '../middleware/auth.js';
 
 const router = express.Router();
@@ -280,15 +281,20 @@ router.delete('/:id', auth, async (req, res) => {
 // @access  Protected
 router.delete('/trash/empty', auth, async (req, res) => {
   try {
-    const result = await Note.deleteMany({ 
+    const noteResult = await Note.deleteMany({ 
       userId: req.userId, 
       isTrashed: true 
     });
 
+    const folderResult = await Folder.deleteMany({
+      userId: req.userId,
+      isTrashed: true
+    });
+
     res.json({
       success: true,
-      message: `${result.deletedCount} note(s) deleted permanently`,
-      deletedCount: result.deletedCount
+      message: `${noteResult.deletedCount} note(s) and ${folderResult.deletedCount} folder(s) deleted permanently`,
+      deletedCount: noteResult.deletedCount + folderResult.deletedCount
     });
 
   } catch (error) {

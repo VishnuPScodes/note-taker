@@ -1,0 +1,114 @@
+.wallpaper-picker {
+  padding: var(--spacing-md) 0;
+}
+
+.category-tabs {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xl);
+  overflow-x: auto;
+  padding-bottom: var(--spacing-sm);
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-xl);
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.category-tab:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.category-tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+.wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--spacing-sm);
+}
+
+.wallpaper-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.wallpaper-item:hover {
+  transform: translateY(-4px);
+}
+
+.wallpaper-preview-container {
+  aspect-ratio: 16/10;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 2px solid transparent;
+  position: relative;
+  background: var(--bg-tertiary);
+  box-shadow: var(--shadow-md);
+  transition: border-color 0.2s ease;
+}
+
+.wallpaper-item.selected .wallpaper-preview-container {
+  border-color: var(--primary);
+}
+
+.wallpaper-preview-fill, .wallpaper-preview-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.wallpaper-preview-svg svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.selected-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--primary);
+  color: white;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.wallpaper-name {
+  font-size: 0.8rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.wallpaper-item.selected .wallpaper-name {
+  color: var(--primary-light);
+  font-weight: 500;
+}

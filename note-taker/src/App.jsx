@@ -11,6 +11,8 @@ import notificationService from './services/notificationService';
 import './index.css';
 
 import { DialogProvider } from './context/DialogContext';
+import { WallpaperProvider } from './context/WallpaperContext';
+import WallpaperBackground from './components/Common/WallpaperBackground';
 
 function App() {
   useEffect(() => {
@@ -30,32 +32,35 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <DialogProvider>
-          <NotesProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/bin"
-                element={
-                  <ProtectedRoute>
-                    <Bin />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </NotesProvider>
-        </DialogProvider>
+        <WallpaperProvider>
+          <DialogProvider>
+            <NotesProvider>
+              <WallpaperBackground />
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/bin"
+                  element={
+                    <ProtectedRoute>
+                      <Bin />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </NotesProvider>
+          </DialogProvider>
+        </WallpaperProvider>
       </AuthProvider>
     </Router>
   );

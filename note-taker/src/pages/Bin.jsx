@@ -11,18 +11,34 @@ import './Bin.css';
 const Bin = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { notes, loading, fetchNotes, restoreNote, deleteNote, emptyTrash } = useNotes();
+  const { 
+    notes, 
+    folders, 
+    loading, 
+    fetchNotes, 
+    fetchFolders, 
+    restoreNote, 
+    deleteNote, 
+    restoreFolder, 
+    deleteFolder, 
+    emptyTrash 
+  } = useNotes();
   const { showConfirm } = useDialog();
 
   useEffect(() => {
     fetchNotes({ isTrashed: true });
-  }, [fetchNotes]);
+    fetchFolders({ isTrashed: true });
+  }, [fetchNotes, fetchFolders]);
 
-  const handleRestore = async (id) => {
+  const handleRestoreNote = async (id) => {
     await restoreNote(id);
   };
 
-  const handleDeletePermanently = async (id) => {
+  const handleRestoreFolder = async (id) => {
+    await restoreFolder(id);
+  };
+
+  const handleDeleteNotePermanently = async (id) => {
     const ok = await showConfirm({
       title: 'Delete Permanently',
       message: 'Are you sure you want to delete this note forever? This action cannot be undone.',
@@ -32,6 +48,19 @@ const Bin = () => {
     
     if (ok) {
       await deleteNote(id);
+    }
+  };
+
+  const handleDeleteFolderPermanently = async (id, name) => {
+    const ok = await showConfirm({
+      title: 'Delete Folder Permanently',
+      message: `Are you sure you want to delete "${name}" forever? Everything inside will also be lost forever.`,
+      confirmText: 'Delete Forever',
+      variant: 'danger'
+    });
+    
+    if (ok) {
+      await deleteFolder(id);
     }
   };
 
@@ -48,7 +77,9 @@ const Bin = () => {
     }
   };
 
-  if (loading && notes.length === 0) {
+  const totalItems = notes.length + folders.length;
+
+  if (loading && totalItems === 0) {
     return <LoadingSpinner text="Searching for deleted items..." />;
   }
 
@@ -72,26 +103,57 @@ const Bin = () => {
         <div className="bin-header">
           <div className="bin-title-group">
             <h1>🗑️ Bin</h1>
-            <p className="items-count">{notes.length} note(s) in bin</p>
+            <p className="items-count">{totalItems} item(s) in bin</p>
           </div>
-          {notes.length > 0 && (
+          {totalItems > 0 && (
             <Button variant="danger" size="sm" onClick={handleEmptyBin}>
               Empty Bin
             </Button>
           )}
         </div>
 
-        {notes.length === 0 ? (
+        {totalItems === 0 ? (
           <div className="empty-bin-state fade-in">
             <div className="empty-bin-icon">🗑️</div>
             <h3>Your bin is empty</h3>
-            <p>Notes you delete will appear here for 30 days before permanent deletion.</p>
+            <p>Notes and folders you delete will appear here until they are permanently removed.</p>
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               Go back home
             </Button>
           </div>
         ) : (
           <div className="bin-grid fade-in">
+            {/* Display Folders first */}
+            {folders.map(folder => (
+              <div key={folder._id} className="bin-item-wrapper">
+                <div className="bin-folder-preview card glass">
+                  <div className="folder-visual" style={{ width: '40px', height: '40px', color: '#fbbf24' }}>
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z" />
+                    </svg>
+                  </div>
+                  <span className="folder-name" style={{ marginTop: '8px', fontSize: '0.8rem' }}>{folder.name}</span>
+                </div>
+                <div className="bin-item-actions">
+                  <button 
+                    className="bin-action-btn restore" 
+                    onClick={() => handleRestoreFolder(folder._id)}
+                    title="Restore folder"
+                  >
+                    🔄 Restore
+                  </button>
+                  <button 
+                    className="bin-action-btn delete" 
+                    onClick={() => handleDeleteFolderPermanently(folder._id, folder.name)}
+                    title="Delete permanently"
+                  >
+                    ✖ Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {/* Display Notes */}
             {notes.map(note => (
               <div key={note._id} className="bin-item-wrapper">
                 <NoteCard 
@@ -101,14 +163,14 @@ const Bin = () => {
                 <div className="bin-item-actions">
                   <button 
                     className="bin-action-btn restore" 
-                    onClick={() => handleRestore(note._id)}
-                    title="Restore to original folder"
+                    onClick={() => handleRestoreNote(note._id)}
+                    title="Restore note"
                   >
                     🔄 Restore
                   </button>
                   <button 
                     className="bin-action-btn delete" 
-                    onClick={() => handleDeletePermanently(note._id)}
+                    onClick={() => handleDeleteNotePermanently(note._id)}
                     title="Delete permanently"
                   >
                     ✖ Delete

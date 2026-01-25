@@ -2,6 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: transparent;
 }
 
 .bin-content {
@@ -17,7 +18,7 @@
   justify-content: space-between;
   align-items: flex-end;
   margin-bottom: var(--spacing-2xl);
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding-bottom: var(--spacing-lg);
 }
 
@@ -87,6 +88,7 @@
 .bin-action-btn.restore {
   background: var(--bg-secondary);
   color: var(--text-primary);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .bin-action-btn.restore:hover {
@@ -101,4 +103,21 @@
 .bin-action-btn.delete:hover {
   background: var(--error);
   color: white;
+}
+
+.bin-folder-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  min-height: 150px;
+}
+
+.bin-folder-preview .folder-visual {
+  transition: transform var(--transition-fast);
+}
+
+.bin-folder-preview:hover .folder-visual {
+  transform: scale(1.1);
 }

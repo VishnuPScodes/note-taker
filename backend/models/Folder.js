@@ -28,6 +28,10 @@ const folderSchema = new mongoose.Schema({
       default: 0
     }
   },
+  isTrashed: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now

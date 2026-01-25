@@ -1,0 +1,17 @@
+.wallpaper-background {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: hidden;
+  transition: all 0.5s ease-in-out;
+}
+
+.wallpaper-background svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}

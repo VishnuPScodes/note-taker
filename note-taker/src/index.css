@@ -77,12 +77,27 @@ html {
 
 body {
   font-family: var(--font-sans);
-  background: linear-gradient(135deg, var(--bg-primary) 0%, #1a1f3a 100%);
   color: var(--text-primary);
   line-height: 1.6;
   min-height: 100vh;
   overflow-x: hidden;
   user-select: none;
+  background: transparent;
+}
+
+.dashboard-nav {
+  background: rgba(15, 23, 42, 0.6) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-content {
+  background: transparent !important;
+}
+
+.items-grid {
+  padding: var(--spacing-xl);
 }
 
 /* Scrollbar Styling */

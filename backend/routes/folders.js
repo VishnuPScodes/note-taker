@@ -21,7 +21,16 @@ const validateFolder = [
 // @access  Protected
 router.get('/', auth, async (req, res) => {
   try {
-    const folders = await Folder.find({ userId: req.userId })
+    const { isTrashed } = req.query;
+    const query = { userId: req.userId };
+
+    if (isTrashed !== undefined) {
+      query.isTrashed = isTrashed === 'true';
+    } else {
+      query.isTrashed = false; // Default to non-trashed
+    }
+
+    const folders = await Folder.find(query)
       .sort({ createdAt: -1 });
 
     res.json({
@@ -166,13 +175,93 @@ router.put('/:id', auth, async (req, res) => {
   }
 });
 
+// @route   PUT /api/folders/:id/trash
+// @desc    Move folder to trash
+// @access  Protected
+router.put('/:id/trash', auth, async (req, res) => {
+  try {
+    const folder = await Folder.findOne({ 
+      _id: req.params.id, 
+      userId: req.userId 
+    });
+
+    if (!folder) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Folder not found' 
+      });
+    }
+
+    folder.isTrashed = true;
+    await folder.save();
+
+    // Also trash all notes inside this folder
+    await Note.updateMany(
+      { folderId: req.params.id, userId: req.userId },
+      { $set: { isTrashed: true } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Folder moved to trash',
+      folder
+    });
+
+  } catch (error) {
+    console.error('Trash folder error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error while moving folder to trash' 
+    });
+  }
+});
+
+// @route   PUT /api/folders/:id/restore
+// @desc    Restore folder from trash
+// @access  Protected
+router.put('/:id/restore', auth, async (req, res) => {
+  try {
+    const folder = await Folder.findOne({ 
+      _id: req.params.id, 
+      userId: req.userId 
+    });
+
+    if (!folder) {
+      return res.status(404).json({ 
+        success: false,
+        message: 'Folder not found' 
+      });
+    }
+
+    folder.isTrashed = false;
+    await folder.save();
+
+    // Also restore all notes inside this folder
+    await Note.updateMany(
+      { folderId: req.params.id, userId: req.userId },
+      { $set: { isTrashed: false } }
+    );
+
+    res.json({
+      success: true,
+      message: 'Folder restored successfully',
+      folder
+    });
+
+  } catch (error) {
+    console.error('Restore folder error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: 'Server error while restoring folder' 
+    });
+  }
+});
+
 // @route   DELETE /api/folders/:id
-// @desc    Delete folder
+// @desc    Permanently delete folder
 // @access  Protected
 router.delete('/:id', auth, async (req, res) => {
   try {
-    const { deleteNotes } = req.query; // ?deleteNotes=true to delete notes, false to move to root
-
     // Find folder and verify ownership
     const folder = await Folder.findOne({ 
       _id: req.params.id, 
@@ -186,24 +275,18 @@ router.delete('/:id', auth, async (req, res) => {
       });
     }
 
-    // Handle notes in the folder
-    if (deleteNotes === 'true') {
-      // Delete all notes in the folder
-      await Note.deleteMany({ folderId: req.params.id, userId: req.userId });
-    } else {
-      // Move notes to root (set folderId to null)
-      await Note.updateMany(
-        { folderId: req.params.id, userId: req.userId },
-        { $set: { folderId: null } }
-      );
-    }
+    // Delete all notes in the folder permanently
+    await Note.deleteMany({ folderId: req.params.id, userId: req.userId });
 
-    // Delete the folder
+    // Delete any subfolders permanently (simple level for now)
+    await Folder.deleteMany({ parentId: req.params.id, userId: req.userId });
+
+    // Delete the folder itself
     await Folder.deleteOne({ _id: req.params.id });
 
     res.json({
       success: true,
-      message: 'Folder deleted successfully'
+      message: 'Folder and its contents permanently deleted'
     });
 
   } catch (error) {
