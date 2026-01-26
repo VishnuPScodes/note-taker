@@ -19,7 +19,7 @@
 .folder-visual {
   width: 64px;
   height: 64px;
-  color: #fbbf24; /* Folder orange/yellow color */
+  color: #00a2ff; /* macOS-style blue */
   filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
   transition: transform var(--transition-fast);
 }
