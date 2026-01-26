@@ -31,8 +31,10 @@
 }
 
 .note-preview {
-  font-size: 0.875rem;
-  color: rgba(0, 0, 0, 0.7);
+  font-family: var(--font-handwriting);
+  font-size: 1.25rem;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.8);
   display: -webkit-box;
   -webkit-line-clamp: 4;
   line-clamp: 4;
@@ -69,6 +71,28 @@
 .note-trash-btn:hover {
   opacity: 1;
   background: rgba(0, 0, 0, 0.05);
+}
+
+@keyframes card-trash {
+  0% { 
+    transform: scale(1) rotate(0deg); 
+    opacity: 1; 
+    filter: blur(0);
+  }
+  30% {
+    transform: scale(1.05) rotate(-2deg);
+    opacity: 0.9;
+  }
+  100% { 
+    transform: scale(0.2) rotate(10deg) translateY(100px); 
+    opacity: 0; 
+    filter: blur(10px);
+  }
+}
+
+.note-card.trashing {
+  animation: card-trash 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  pointer-events: none;
 }
 
 .note-reminder-badge {

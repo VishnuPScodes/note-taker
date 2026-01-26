@@ -1,7 +1,28 @@
+.note-form label {
+  color: #000 !important;
+  font-weight: 600;
+}
+
 .note-form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
+  background-color: var(--selected-note-color, transparent);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  transition: background-color 0.3s ease;
+}
+
+.note-form textarea {
+  font-family: var(--font-handwriting);
+  font-size: 1.5rem;
+  line-height: 1.6;
+  color: #1a1f3a; /* Dark text for colored background */
+}
+
+.note-form input#title {
+  color: #1a1f3a;
+  font-weight: 700;
 }
 
 .note-options {
@@ -9,16 +30,13 @@
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-xl);
   padding: var(--spacing-md);
-  background: var(--bg-secondary);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: var(--radius-md);
 }
 
 .color-selector label,
 .reminder-selector label {
-  display: block;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--text-secondary);
+  color: #1a1f3a;
   margin-bottom: var(--spacing-sm);
 }
 

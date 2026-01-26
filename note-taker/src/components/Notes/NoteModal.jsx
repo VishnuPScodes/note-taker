@@ -98,7 +98,7 @@ const NoteModal = ({ isOpen, onClose, note = null, folderId = null }) => {
       title={note ? 'Edit Note' : 'Create New Note'}
       size="lg"
     >
-      <form onSubmit={handleSubmit} className="note-form">
+      <form onSubmit={handleSubmit} className="note-form" style={{ '--selected-note-color': formData.color }}>
         {error && <ErrorMessage message={error} onDismiss={() => setError('')} />}
         
         <div className="form-group">
@@ -111,6 +111,7 @@ const NoteModal = ({ isOpen, onClose, note = null, folderId = null }) => {
             onChange={handleChange}
             placeholder="Note title..."
             required
+            style={{ background: 'rgba(255,255,255,0.7)' }}
           />
         </div>
 
@@ -124,6 +125,7 @@ const NoteModal = ({ isOpen, onClose, note = null, folderId = null }) => {
             placeholder="Write your note here..."
             rows="10"
             required
+            style={{ background: 'rgba(255,255,255,0.7)' }}
           ></textarea>
         </div>
 
