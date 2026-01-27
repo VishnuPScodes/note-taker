@@ -10,6 +10,7 @@ import NoteModal from '../components/Notes/NoteModal';
 import FolderModal from '../components/Folders/FolderModal';
 import WallpaperPicker from '../components/Common/WallpaperPicker';
 import { useDialog } from '../context/DialogContext';
+import ContextMenu from '../components/Common/ContextMenu';
 import './Dashboard.css';
 
 import { DndContext, useSensor, useSensors, PointerSensor, useDroppable } from '@dnd-kit/core';
@@ -61,11 +62,28 @@ const Dashboard = () => {
   const [showWallpaperPicker, setShowWallpaperPicker] = useState(false);
   const [editingNote, setEditingNote] = useState(null);
   const [editingFolder, setEditingFolder] = useState(null);
+  const [contextMenu, setContextMenu] = useState(null);
 
   useEffect(() => {
     fetchNotes({ isTrashed: false });
     fetchFolders({ isTrashed: false });
   }, [fetchNotes, fetchFolders]);
+
+  const handleDashboardContextMenu = (e) => {
+    // Only show if we didn't click a folder or note (which might have their own menus/actions)
+    if (!e.target.closest('.folder-icon-container') && !e.target.closest('.note-card')) {
+      e.preventDefault();
+      setContextMenu({ x: e.clientX, y: e.clientY });
+    }
+  };
+
+  const dashboardMenuOptions = [
+    { label: 'New Note', icon: '✏️', onClick: handleNewNote },
+    { label: 'New Folder', icon: '📁', onClick: () => setShowFolderModal(true) },
+    { separator: true },
+    { label: 'Change Wallpaper', icon: '🖼️', onClick: () => setShowWallpaperPicker(true) },
+    { label: 'Open Bin', icon: '🗑️', onClick: () => navigate('/bin') },
+  ];
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -170,7 +188,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" onContextMenu={handleDashboardContextMenu}>
       <nav className="dashboard-nav">
         <div className="nav-left">
           <h2 className="app-title" onClick={handleBackToRoot} style={{ cursor: 'pointer' }}>📝 NoteTaker</h2>
@@ -293,6 +311,15 @@ const Dashboard = () => {
         <WallpaperPicker 
           isOpen={showWallpaperPicker}
           onClose={() => setShowWallpaperPicker(false)}
+        />
+      )}
+
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          options={dashboardMenuOptions}
+          onClose={() => setContextMenu(null)}
         />
       )}
     </div>

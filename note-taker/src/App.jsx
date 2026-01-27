@@ -23,20 +23,9 @@ function App() {
       }
     });
 
-    // Prevent global right-click except where explicitly allowed
-    const handleGlobalContextMenu = (e) => {
-      // Check if the click was on/inside a folder icon
-      if (!e.target.closest('.folder-icon-container')) {
-        e.preventDefault();
-      }
-    };
-
-    window.addEventListener('contextmenu', handleGlobalContextMenu);
-
     // Cleanup on unmount
     return () => {
       notificationService.stopChecking();
-      window.removeEventListener('contextmenu', handleGlobalContextMenu);
     };
   }, []);
 
